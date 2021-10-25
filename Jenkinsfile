@@ -31,19 +31,29 @@ node {
                  rc = bat returnStatus: true, script: "\"${toolbelt}\" force:auth:jwt:grant --clientid ${CONNECTED_APP_CONSUMER_KEY} --username ${HUB_ORG} --jwtkeyfile \"${jwt_key_file}\" --setdefaultdevhubusername --instanceurl ${SFDC_HOST}"
             }
             if (rc != 0) { error 'hub org authorization failed' }
+		println rc
+        	}
+   	}
+	// -------------------------------------------------------------------------
+            // Create new scratch org to test your code.
+            // -------------------------------------------------------------------------
 
-			println rc
-			
-			// need to pull out assigned username
-			if (isUnix()) {
-				rmsg = sh returnStdout: true, script: "${toolbelt} force:mdapi:deploy -d manifest/. -u ${HUB_ORG}"
-			}else{
-			   rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:mdapi:deploy -d manifest/. -u ${HUB_ORG}"
-			}
-			  
-            printf rmsg
-            println('Hello from a Job DSL script!')
-            println(rmsg)
-        }
-    }
+            stage('Create Test Scratch Org') {
+                rc = command "${toolbelt}/sfdx force:org:create --targetdevhubusername HubOrg --setdefaultusername --definitionfile config/project-scratch-def.json --setalias ciorg --wait 10 --durationdays 1"
+                if (rc != 0) {
+                    error 'Salesforce test scratch org creation failed.'
+                }
+            }
+
+
+            // -------------------------------------------------------------------------
+            // Display test scratch org info.
+            // -------------------------------------------------------------------------
+
+            stage('Display Test Scratch Org') {
+                rc = command "${toolbelt}/sfdx force:org:display --targetusername ciorg"
+                if (rc != 0) {
+                    error 'Salesforce test scratch org display failed.'
+                }
+            }
 }
