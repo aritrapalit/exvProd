@@ -40,7 +40,8 @@ node {
 
             stage('Create Test Scratch Org') {
                 rc = command "${toolbelt}/sfdx force:org:create --targetdevhubusername HubOrg --setdefaultusername --definitionfile config/project-scratch-def.json --setalias ciorg --wait 10 --durationdays 1"
-                if (rc != 0) {
+               	println rc
+		    if (rc != 0) {
                     error 'Salesforce test scratch org creation failed.'
                 }
             }
@@ -52,6 +53,7 @@ node {
 
             stage('Display Test Scratch Org') {
                 rc = command "${toolbelt}/sfdx force:org:display --targetusername ciorg"
+		println rc
                 if (rc != 0) {
                     error 'Salesforce test scratch org display failed.'
                 }
